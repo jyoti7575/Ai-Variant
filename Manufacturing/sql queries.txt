@@ -1,0 +1,78 @@
+create database project;
+use project;
+select * from product_data_1;
+
+-- Q1 Manufacture Qty
+SELECT SUM(CAST(`Produced Qty` AS DECIMAL)) AS total_manufactured
+FROM product_data_1;
+
+-- Q2  Rejected Qty 
+ SELECT SUM(CAST(`Rejected Qty` AS DECIMAL)) AS total_rejected
+FROM product_data_1;
+
+-- Q3 processed qty
+ SELECT SUM(CAST(`Processed Qty` AS DECIMAL)) AS total_processed
+FROM product_data_1;
+
+-- Q4  Wastage qty
+ SELECT SUM(CAST(`Produced Qty` AS DECIMAL)) - 
+       SUM(CAST(`Processed Qty` AS DECIMAL)) - 
+       SUM(CAST(`Rejected Qty` AS DECIMAL)) AS total_wastage
+FROM product_data_1;
+
+ -- Q5 Employee wise rejected qty
+ SELECT `Emp Name`, 
+       SUM(CAST(`Rejected Qty` AS DECIMAL)) AS total_rejected
+FROM product_data_1
+GROUP BY `Emp Name`
+ORDER BY total_rejected DESC;
+
+-- Q6 Machine wise rejected qty
+ SELECT `Machine Name`, 
+       SUM(CAST(`Rejected Qty` AS DECIMAL)) AS total_rejected
+FROM product_data_1
+GROUP BY `Machine Name`
+ORDER BY total_rejected DESC;
+
+-- Q7 Production comparison trend
+ SELECT `Doc Date`,
+       SUM(CAST(`Produced Qty` AS DECIMAL)) AS total_manufactured,
+       SUM(CAST(`Rejected Qty` AS DECIMAL)) AS total_rejected
+FROM product_data_1
+GROUP BY `Doc Date`
+ORDER BY `Doc Date`;
+
+-- Q8 manufacture vs rejected qty
+ SELECT 
+    SUM(CAST(`Produced Qty` AS DECIMAL)) AS total_manufactured,
+    SUM(CAST(`Rejected Qty` AS DECIMAL)) AS total_rejected,
+    (SUM(CAST(`Produced Qty` AS DECIMAL)) - SUM(CAST(`Rejected Qty` AS DECIMAL))) AS net_good_qty,
+    (CASE WHEN SUM(CAST(`Produced Qty` AS DECIMAL)) = 0 
+          THEN 0
+          ELSE (SUM(CAST(`Rejected Qty` AS DECIMAL)) * 1.0 / SUM(CAST(`Produced Qty` AS DECIMAL))) * 100 
+     END) AS reject_percentage
+FROM product_data_1;
+
+-- Q9 Department wise manifactured vs rejected qty
+ SELECT `Department Name`,
+       SUM(CAST(`Produced Qty` AS DECIMAL)) AS total_manufactured,
+       SUM(CAST(`Rejected Qty` AS DECIMAL)) AS total_rejected
+FROM product_data_1
+GROUP BY `Department Name`
+ORDER BY total_manufactured DESC;
+
+-- Q10 Employee wise rejected qty
+ SELECT `Emp Name`,
+       SUM(CAST(`Rejected Qty` AS DECIMAL)) AS total_rejected
+FROM product_data_1
+GROUP BY `Emp Name`
+ORDER BY total_rejected DESC;
+
+
+
+
+
+
+
+
+
