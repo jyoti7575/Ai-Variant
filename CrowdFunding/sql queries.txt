@@ -1,0 +1,125 @@
+create database projects;
+Use projects;
+
+select * from abhishek;
+SHOW VARIABLES LIKE "secure_file_priv";
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/Abhishek.csv"
+INTO TABLE abhishek
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS; -- If you have a header row
+
+TRUNCATE TABLE Project.projects;
+
+-- 5th KPI
+
+-- 5.1.	Total Number of Projects based on Outcome 
+select count(*) as `Number_Of_Projects`, 
+Status as `Project_Outcome` 
+from abhishek
+group by `Project_Outcome`
+order by `Number_Of_Projects` Asc;
+
+-- 5.2.	Total Number of Projects based on Locations 
+select count(*) as `Number_Of_Projects`, 
+Location_Name as `Location`,
+Location_Country as `Country`
+from abhishek
+group by `Location`, `Country`
+order by `Number_Of_Projects` Desc;
+
+-- 5.3.	Total Number of Projects based on Category 
+select count(*) as `Number_Of_Projects`, 
+Category_Name as `Category` 
+from abhishek
+group by `Category`
+order by `Number_Of_Projects` Desc;
+
+-- 5.4.	Total Number of Projects created by Year
+select count(*) as `Number_Of_Projects`, 
+Created_Year as `Year` 
+from abhishek
+group by `Year`
+order by `Year` asc;
+
+-- 5.5.	Total Number of Projects created by Quarter
+select count(*) as `Number_Of_Projects`, 
+Created_Quarter as `Quarter` 
+from projects
+group by `Quarter`
+order by `Quarter` asc;
+
+-- 5.6.	Total Number of Projects created by Month
+select count(*) as `Number_Of_Projects`, 
+Created_Month as `Month` 
+from projects
+group by `Month`
+order by `Month` asc;
+
+
+-- 6th KPI 
+
+-- 6.1.	Amount Raised by Successful Projects
+select sum(Amount_Raised) as `Amount_Raised` , 
+sum(USD_Raised) as `USD_Raised`,
+status
+from projects
+where status="Successful";
+
+-- 6.2.	Number of Backers for Successful Projects
+select sum(Backers_count) as `No_of_Backers` , 
+status
+from projects
+where status="Successful";
+
+-- 6.3
+
+-- 7th KPI
+
+-- 7.1	Top 10 Successful Projects based on Backers
+select Project_Id,
+Backers_count as `No_of_Backers`,
+Status
+from projects
+where status="Successful"
+order by `No_of_Backers` Desc
+limit 10;
+
+-- 7.2	Top 10 Successful Projects based on Amount Raised
+select Project_Id,
+Amount_Raised as `Amount_Raised`,
+Status
+from projects
+where status="Successful"
+order by `Amount_Raised` Desc
+limit 10;
+
+
+-- 8.1.	Percentage of Successful Projects overall
+select (sum(case when status = "successful" then 1 else 0 end) * 100.0 / count(*)) as `Success_Percentage`
+from projects;
+
+-- 8.2.	Percentage of Successful Projects overall by category
+select (sum(case when status = "successful" then 1 else 0 end) * 100.0 / count(*)) as `Success_Percentage`,
+Category_Name
+from projects
+group by Category_Name;
+
+-- 8.3.	Percentage of Successful Projects overall by Year , Month 
+select (sum(case when status = "successful" then 1 else 0 end) * 100.0 / count(*)) as `Success_Percentage`,
+Created_Year, Created_Month
+from projects
+group by Created_Year, Created_Month
+order by Created_Year;
+
+-- 8.4.	Percentage of Successful Projects overall by Goal Range
+SELECT  (sum(case when status = "successful" then 1 else 0 end) * 100.0 / count(*)) as `Success_Percentage`,
+CASE
+when Goal_Amount_USD <= 5000 then "1K-5K"
+when Goal_Amount_USD > 5000 AND Goal_Amount_USD <= 20000 then "5k-20k"
+else "20K+"
+End as Goal_Range
+from abhishek
+group by Goal_Range
+order by Goal_range;
