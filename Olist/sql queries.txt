@@ -1,0 +1,110 @@
+-- KPI 1: Weekday Vs Weekend Payment Statistics
+SELECT 
+CASE WHEN DAYOFWEEK(oo.order_purchase_timestamp) IN (1 , 7) 
+THEN 'Weekend'
+ELSE 'Weekday'
+END AS Day_type,
+COUNT(oo.order_id) AS `Total_orders`,
+ROUND(SUM(op.payment_value), 2) AS `Total_payment_value`
+FROM olist_orders_dataset oo
+LEFT JOIN olist_order_payments_dataset op ON oo.order_id = op.order_id
+GROUP BY day_type
+ORDER BY day_type;
+
+-- KPI 2: Number of Orders with review score 5 and payment type as credit card.
+SELECT COUNT(oo.order_id) AS `Num_orders` , Payment_type, orv.Review_score
+FROM olist_orders_dataset oo
+LEFT JOIN olist_order_payments_dataset op ON oo.order_id = op.order_id
+JOIN olist_order_reviews_dataset orv ON oo.order_id = orv.order_id
+WHERE orv.review_score = 5
+AND op.payment_type = 'credit_card';
+  
+-- KPI 3: Average Delivery Time for pet_shop.
+SELECT ROUND(AVG(DATEDIFF(oo.order_delivered_customer_date,
+oo.order_purchase_timestamp)), 2) AS `Avg_delivery_days`,
+op.product_category_name as `Product_Category`,
+pt.product_category_name_english as `Product_Category_English`
+FROM olist_orders_dataset oo
+LEFT JOIN olist_order_items_dataset oi ON oo.order_id = oi.order_id
+JOIN olist_products_dataset op ON oi.product_id = op.product_id
+JOIN product_category_name_translation pt ON pt.ÿproduct_category_name = op.product_category_name
+WHERE pt.product_category_name_english = 'pet_shop'
+AND oo.order_delivered_customer_date IS NOT NULL
+AND oo.order_purchase_timestamp IS NOT NULL
+GROUP BY op.product_category_name,
+pt.product_category_name_english;
+  
+-- KPI 4: Average Price and Payment Values from customers of sao paulo city.
+SELECT ROUND(AVG(oi.price), 2) AS `Avg_price`,
+ROUND(AVG(op.payment_value), 2) AS `Avg_payment_value`
+FROM olist_orders_dataset oo
+LEFT JOIN olist_order_items_dataset oi ON oo.order_id = oi.order_id
+JOIN olist_order_payments_dataset op ON oo.order_id = op.order_id
+JOIN olist_customers_dataset c ON oo.customer_id = c.customer_id
+WHERE c.customer_city = 'sao paulo';
+
+
+-- KPI 5: Relationship between Shipping Days Vs Review Scores.
+SELECT DISTINCT orv.review_score ,
+AVG(round(datediff(order_delivered_customer_date, order_purchase_timestamp))) AS `Avg_Shipping_Days`
+FROM olist_order_reviews_dataset orv
+Left JOIN olist_orders_dataset oo on oo.order_id = orv.order_id
+GROUP BY orv.review_score
+ORDER BY`Avg_Shipping_Days` DESC;
+
+-- KPI 6: Total Number of Orders
+SELECT COUNT(DISTINCT order_id) AS `Total_Orders`
+FROM olist_orders_dataset;
+
+-- KPI 7: Total Revenue
+SELECT ROUND(SUM(price), 2) AS `Total_Revenue`
+FROM olist_order_items_dataset;
+
+-- KPI 8: Average Order Value (Price)
+SELECT ROUND(AVG(price), 2) AS `Average_order_value`
+FROM olist_order_items_dataset;
+
+-- KPI 9: Number of Order by Status
+SELECT Order_status,
+COUNT(order_id) AS `Number_of_orders`
+FROM olist_orders_dataset
+GROUP BY order_status;
+
+-- KPI 10: Number of Payment by Payment Type
+SELECT Payment_type,
+COUNT(order_id) AS `Number_of_payments`
+FROM olist_order_payments_dataset
+GROUP BY payment_type
+ORDER BY `Number_of_payments` DESC;
+
+-- KPI 11: Customers by Location
+SELECT c.customer_state, c.customer_city,
+COUNT(DISTINCT c.customer_id) AS `Num_customers`
+FROM olist_customers_dataset c
+GROUP BY c.customer_state , c.customer_city
+ORDER BY `Num_customers` DESC;
+
+-- KPI 12: Seller Performance by Location:
+SELECT s.seller_state, s.seller_city,
+COUNT(DISTINCT oi.order_id) AS `Num_orders`,
+ROUND(SUM(oi.price), 2) AS `Total_sales_value`
+FROM olist_sellers_dataset s
+LEFT  JOIN olist_order_items_dataset oi ON s.seller_id = oi.seller_id
+GROUP BY s.seller_state , s.seller_city
+ORDER BY `Num_orders` DESC;
+
+-- KPI 13: Average Delivery Time by State:
+SELECT c.customer_state, 
+ROUND(AVG(DATEDIFF(oo.order_delivered_customer_date,
+oo.order_purchase_timestamp)),2) AS `Avg_delivery_days`
+FROM olist_orders_dataset oo 
+JOIN olist_customers_dataset c ON oo.customer_id = c.customer_id
+WHERE oo.order_delivered_customer_date IS NOT NULL
+AND oo.order_purchase_timestamp IS NOT NULL
+GROUP BY c.customer_state
+ORDER BY avg_delivery_days Desc;
+
+
+
+
+
